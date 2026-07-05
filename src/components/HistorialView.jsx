@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getHistorialGlobal } from '../services/auditoriaService';
+import { getHistorialGlobal } from '../services/AuditoriaService';
 
 const HistorialView = () => {
     const [historial, setHistorial] = useState([]);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { getAllTareas, createTarea, updateTarea, updateEstadoTarea, deleteTarea, uploadEvidenciaTarea, reportarIncidenciaTarea } from '../services/tareaService';
-import { getAllUsers } from '../services/userService';
-import { getAllDepartamentos } from '../services/departamentoService';
+import { getAllUsers } from '../services/UserService';
+import { getAllDepartamentos } from '../services/DepartamentoService';
 import { AuthContext } from '../context/AuthContext';
 
 const BACKEND_URL = 'http://localhost:8080';

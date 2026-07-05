@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { getAllTareas } from '../services/tareaService';
+import { getAllTareas } from '../services/TareaService';
 import { AuthContext } from '../context/AuthContext';
 
 const ResumenView = ({ updateTrigger }) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { getAllTareas, createTarea, updateTarea, updateEstadoTarea, deleteTarea, uploadEvidenciaTarea, reportarIncidenciaTarea } from '../services/tareaService';
+import { getAllTareas, createTarea, updateTarea, updateEstadoTarea, deleteTarea, uploadEvidenciaTarea, reportarIncidenciaTarea } from '../services/TareaService';
 import { getAllUsers } from '../services/UserService';
 import { getAllDepartamentos } from '../services/DepartamentoService';
 import { AuthContext } from '../context/AuthContext';

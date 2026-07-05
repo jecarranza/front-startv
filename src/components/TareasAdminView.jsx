@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { getAllTareas, updateTarea } from '../services/tareaService';
-import { getAllUsers } from '../services/userService';
+import { getAllTareas, updateTarea } from '../services/TareaService';
+import { getAllUsers } from '../services/UserService';
 import { AuthContext } from '../context/AuthContext';
 
 const TareasAdminView = ({ updateTrigger }) => {

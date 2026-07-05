@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAllUsers, createUser, updateUser, deleteUser } from '../services/userService';
-import { getAllDepartamentos } from '../services/departamentoService';
+import { getAllUsers, createUser, updateUser, deleteUser } from '../services/UserService';
+import { getAllDepartamentos } from '../services/DepartamentoService';
 
 const UsuariosView = () => {
     const [usuarios, setUsuarios] = useState([]);

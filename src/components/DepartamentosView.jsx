@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllDepartamentos, createDepartamento, updateDepartamento, deleteDepartamento } from '../services/departamentoService';
+import { getAllDepartamentos, createDepartamento, updateDepartamento, deleteDepartamento } from '../services/DepartamentoService';
 
 const DepartamentosView = () => {
     const [departamentos, setDepartamentos] = useState([]);

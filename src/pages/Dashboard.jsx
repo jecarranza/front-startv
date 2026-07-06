@@ -11,7 +11,7 @@ import ResumenView from '../components/ResumenView';
 import HistorialView from '../components/HistorialView';
 import TareasAdminView from '../components/TareasAdminView'; // 👈 NUEVO COMPONENTE
 
-const BACKEND_WS_URL = 'http://localhost:8080/ws-star-tv';
+const BACKEND_WS_URL = `${import.meta.env.VITE_API_URL}/ws-star-tv`;
 
 const Dashboard = () => {
     const { user, logoutUser } = useContext(AuthContext);

@@ -4,7 +4,7 @@ import { getAllUsers } from '../services/UserService';
 import { getAllDepartamentos } from '../services/DepartamentoService';
 import { AuthContext } from '../context/AuthContext';
 
-const BACKEND_URL = 'http://localhost:8080';
+const BACKEND_URL = import.meta.env.VITE_API_URL;
 
 const TareasView = ({ updateTrigger }) => {
     const { user } = useContext(AuthContext);

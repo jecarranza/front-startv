@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 🚨 Nota el cambio de ruta respecto a los otros servicios
-const API_URL = 'http://localhost:8080/api/tareas'; 
+const API_URL = `${import.meta.env.VITE_API_URL}/api/tareas`;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

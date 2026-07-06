@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/auditoria';
+const API_URL = `${import.meta.env.VITE_API_URL}/auditoria`;
 
 export const getHistorialGlobal = async (page = 0, size = 20) => {
     // 👇 Inyectamos page y size directamente en la URL

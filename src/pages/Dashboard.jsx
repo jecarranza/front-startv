@@ -26,6 +26,18 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
     let rolDelToken = 'EMPLEADO';
 
+    const token = localStorage.getItem('token');
+    let rolDelToken = 'EMPLEADO';
+    let nombreDelToken = ''; // 👈 NUEVA VARIABLE
+
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            rolDelToken = payload.rol || payload.role || 'EMPLEADO';
+            nombreDelToken = payload.nombre || ''; // 👈 LEEMOS EL NOMBRE DIRECTO DEL TOKEN
+        } catch (e) { }
+    }
+
     if (token) {
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
@@ -223,12 +235,16 @@ const Dashboard = () => {
                 <div className="mt-auto p-6 bg-slate-900/40 border-t border-slate-800/80">
                     <div className="bg-slate-800/40 border border-slate-700/50 p-4 rounded-2xl">
                         <div className="flex items-center gap-3 mb-4">
+                            
+                            {/* 👇 Inicial del nombre obtenida del token 👇 */}
                             <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-tr from-yellow-600 to-yellow-400 flex items-center justify-center text-slate-900 font-bold text-lg uppercase shadow-[0_0_10px_rgba(234,179,8,0.3)]">
-                                {user?.nombre?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                                {nombreDelToken?.charAt(0) || user?.email?.charAt(0) || 'U'}
                             </div>
+                            
                             <div className="overflow-hidden">
-                                <p className="text-sm font-bold text-white truncate" title={user?.nombre || user?.email}>
-                                    {user?.nombre || user?.email || 'Usuario'}
+                                {/* 👇 Nombre completo obtenido del token 👇 */}
+                                <p className="text-sm font-bold text-white truncate" title={nombreDelToken || user?.email}>
+                                    {nombreDelToken || user?.email || 'Usuario'}
                                 </p>
                                 <p className="text-xs text-yellow-500 font-medium tracking-wider uppercase">
                                     {rolDelToken}

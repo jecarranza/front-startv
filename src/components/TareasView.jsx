@@ -535,14 +535,49 @@ const TareasView = ({ updateTrigger }) => {
 
             {isEvidenciaModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-                    <div className="bg-slate-900 border border-emerald-500/30 w-full max-w-md p-6 rounded-2xl shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+                    <div className="bg-slate-900 border border-emerald-500/30 w-full max-w-md p-6 rounded-2xl shadow-[0_0_40px_rgba(16,185,129,0.15)] relative">
                         <h3 className="text-xl font-bold text-white mb-2">Completar Tarea</h3>
                         <p className="text-slate-400 text-sm mb-6">Adjunta evidencia (imagen/PDF) para marcarla como completada.</p>
+                        
                         <form onSubmit={handleSubirEvidencia}>
-                            <input type="file" className="w-full text-slate-300 mb-6" accept="image/*,.pdf" onChange={(e) => setArchivoEvidencia(e.target.files[0])} />
+                            
+                            {/* 👇 NUEVO DISEÑO DEL INPUT FILE 👇 */}
+                            <div className="mb-6">
+                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-700 border-dashed rounded-xl cursor-pointer bg-slate-800/50 hover:bg-slate-700/50 hover:border-emerald-500/50 transition-all group">
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        {archivoEvidencia ? (
+                                            <>
+                                                {/* Vista cuando YA se seleccionó un archivo */}
+                                                <svg className="w-8 h-8 text-emerald-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                <p className="text-sm text-emerald-400 font-semibold text-center px-4 truncate max-w-[16rem]">{archivoEvidencia.name}</p>
+                                                <p className="text-xs text-slate-500 mt-1">Clic para cambiar archivo</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {/* Vista cuando AÚN NO hay archivo */}
+                                                <svg className="w-8 h-8 text-slate-400 mb-2 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                                <p className="mb-1 text-sm text-slate-400 group-hover:text-slate-300"><span className="font-bold text-emerald-500">Haz clic para subir</span> o arrastra tu archivo</p>
+                                                <p className="text-xs text-slate-500">Formatos PNG, JPG o PDF</p>
+                                            </>
+                                        )}
+                                    </div>
+                                    <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        accept="image/*,.pdf" 
+                                        onChange={(e) => setArchivoEvidencia(e.target.files[0])} 
+                                    />
+                                </label>
+                            </div>
+                            {/* 👆 FIN DEL NUEVO DISEÑO 👆 */}
+
                             <div className="flex justify-end gap-3">
-                                <button type="button" onClick={() => setIsEvidenciaModalOpen(false)} className="px-4 py-2 text-sm text-slate-400">Cancelar</button>
-                                <button type="submit" className="px-5 py-2 text-sm bg-emerald-500 text-slate-900 font-bold rounded-xl">Subir</button>
+                                <button type="button" onClick={() => { setIsEvidenciaModalOpen(false); setArchivoEvidencia(null); }} className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">
+                                    Cancelar
+                                </button>
+                                <button type="submit" disabled={!archivoEvidencia} className="px-5 py-2 text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Subir Evidencia
+                                </button>
                             </div>
                         </form>
                     </div>

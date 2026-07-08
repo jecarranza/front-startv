@@ -25,9 +25,6 @@ const Dashboard = () => {
 
     const token = localStorage.getItem('token');
     let rolDelToken = 'EMPLEADO';
-
-    const token = localStorage.getItem('token');
-    let rolDelToken = 'EMPLEADO';
     let nombreDelToken = ''; // 👈 NUEVA VARIABLE
 
     if (token) {

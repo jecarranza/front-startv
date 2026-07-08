@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { getAllUsers, createUser, updateUser, deleteUser } from '../services/UserService';
 import { getAllDepartamentos } from '../services/DepartamentoService';
 
-const UsuariosView = () => {
+// 1. 👇 Recibimos updateTrigger como prop
+const UsuariosView = ({ updateTrigger }) => {
     const [usuarios, setUsuarios] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,9 +23,10 @@ const UsuariosView = () => {
         departamentoId: '' 
     });
 
+    // 2. 👇 Agregamos updateTrigger al arreglo de dependencias
     useEffect(() => {
         cargarDatosMaestros();
-    }, []);
+    }, [updateTrigger]); // <--- ¡Listo para el tiempo real!
 
     const cargarDatosMaestros = async () => {
         setLoading(true);

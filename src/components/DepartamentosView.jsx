@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAllDepartamentos, createDepartamento, updateDepartamento, deleteDepartamento } from '../services/DepartamentoService';
 
-const DepartamentosView = () => {
+// 1. 👇 Recibimos updateTrigger como prop (parámetro)
+const DepartamentosView = ({ updateTrigger }) => {
     const [departamentos, setDepartamentos] = useState([]);
     const [loading, setLoading] = useState(true);
     
@@ -16,9 +17,10 @@ const DepartamentosView = () => {
         nombreDepartamento: '' 
     });
 
+    // 2. 👇 Agregamos updateTrigger al arreglo de dependencias
     useEffect(() => {
         cargarDepartamentos();
-    }, []);
+    }, [updateTrigger]); // <--- ¡Esta es la clave de la actualización en vivo!
 
     const cargarDepartamentos = async () => {
         setLoading(true);

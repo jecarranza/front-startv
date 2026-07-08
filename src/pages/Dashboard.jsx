@@ -37,6 +37,14 @@ const Dashboard = () => {
     const miEmail = user?.email;
 
     useEffect(() => {
+        const tokenActivo = localStorage.getItem('token');
+        // Si no hay token o no hay usuario, lo pateamos al login inmediatamente
+        if (!tokenActivo || !user) {
+            navigate('/login', { replace: true });
+        }
+    }, [navigate, user]);
+
+    useEffect(() => {
         if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
             Notification.requestPermission();
         }
@@ -130,7 +138,11 @@ const Dashboard = () => {
     };
 
     const marcarNotificacionesLeidas = () => setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));
-    const handleLogout = () => { logoutUser(); navigate('/login'); };
+    const handleLogout = () => { 
+        logoutUser(); 
+        // El replace: true borra el dashboard del historial de esta pestaña
+        navigate('/login', { replace: true }); 
+    };
 
     const getToastColors = (tipo) => {
         switch (tipo) {
@@ -264,11 +276,11 @@ const Dashboard = () => {
 
                 <div className="px-8 lg:px-12 pb-12 -mt-12 flex-1">
                     {vistaActiva === 'resumen' && <ResumenView updateTrigger={updateTrigger} />}
-                    {vistaActiva === 'usuarios' && <UsuariosView />}
-                    {vistaActiva === 'departamentos' && <DepartamentosView />}
+                    {/* 👇 AQUÍ LE CONECTAMOS EL CABLE A ESTOS DOS 👇 */}
+                    {vistaActiva === 'usuarios' && <UsuariosView updateTrigger={updateTrigger} />}
+                    {vistaActiva === 'departamentos' && <DepartamentosView updateTrigger={updateTrigger} />}
                     {vistaActiva === 'tareas' && <TareasView updateTrigger={updateTrigger} />}
                     {vistaActiva === 'historial' && <HistorialView updateTrigger={updateTrigger} />}
-                    {/* 👇 RENDERIZAMOS LA NUEVA BISTA 👇 */}
                     {vistaActiva === 'tareasAdmin' && <TareasAdminView updateTrigger={updateTrigger} />}
                 </div>
             </main>

@@ -1,33 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { getHistorialGlobal } from '../services/AuditoriaService';
 
-const HistorialView = () => {
+// 1. 👇 Recibimos updateTrigger como prop
+const HistorialView = ({ updateTrigger }) => {
     const [historial, setHistorial] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     
-    // NUEVOS ESTADOS PARA PAGINACIÓN
     const [pagina, setPagina] = useState(0);
     const [hayMasDatos, setHayMasDatos] = useState(true);
 
-    // Se ejecuta al montar el componente (página 0) y cada vez que 'pagina' aumenta
+    // 2. 👇 Efecto que reacciona a cambios en la página o en el updateTrigger
     useEffect(() => {
         const cargarHistorial = async () => {
             setLoading(true);
             try {
-                // Le pasamos la página actual y el tamaño (20) a tu servicio
                 const data = await getHistorialGlobal(pagina, 20);
                 
                 if (data && data.length > 0) {
-                    // Concatenamos el historial anterior con la nueva página que llega
-                    setHistorial(prevHistorial => [...prevHistorial, ...data]);
-                    
-                    // Si el backend devuelve menos de 20, significa que llegamos al final del historial
-                    if (data.length < 20) {
-                        setHayMasDatos(false);
+                    // Si estamos en la página 0 (carga inicial o recarga por WebSocket), SOBRESCRIBIMOS.
+                    // Si estamos en otra página, CONCATENAMOS (Scroll down).
+                    if (pagina === 0) {
+                        setHistorial(data);
+                    } else {
+                        setHistorial(prevHistorial => [...prevHistorial, ...data]);
                     }
+                    
+                    // Si regresan exactamente 20, asumimos que hay más. Si son menos, llegamos al final.
+                    setHayMasDatos(data.length === 20);
                 } else {
-                    setHayMasDatos(false); // Si llega vacío, ya no hay más datos
+                    // Si llega vacío y estamos en la primera página, limpiamos la pantalla
+                    if (pagina === 0) setHistorial([]); 
+                    setHayMasDatos(false);
                 }
             } catch (error) {
                 console.error("Error al cargar historial", error);
@@ -37,8 +41,18 @@ const HistorialView = () => {
         };
         
         cargarHistorial();
-    }, [pagina]);
+    }, [pagina, updateTrigger]); // <--- Añadimos updateTrigger aquí
 
+    // 3. 👇 Efecto extra: Si llega un aviso de WebSockets, forzamos regresar a la página 0
+    useEffect(() => {
+        if (updateTrigger > 0) {
+            setPagina(0); 
+        }
+    }, [updateTrigger]);
+
+    // ==========================================
+    // DE AQUÍ EN ADELANTE TU CÓDIGO SIGUE IGUAL
+    // ==========================================
     const historialFiltrado = historial.filter(h => {
         const busqueda = searchTerm.toLowerCase();
         return (h.responsable?.toLowerCase() || '').includes(busqueda) ||

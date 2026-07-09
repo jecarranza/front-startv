@@ -381,7 +381,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
                             <tr className="border-b border-slate-700/50 text-slate-400 text-xs font-semibold uppercase tracking-wider">
                                 <th className="p-4 pl-6">Título</th>
                                 <th className="p-4">Fecha Creación</th>
-                                {tabActiva === 'historial' && <th className="p-4 text-emerald-500">Completada El</th>}
+                                {tabActiva === 'historial' && <th className="p-4 text-emerald-500">Fecha Completada</th>}
                                 <th className="p-4">Asignado A</th>
                                 {tabActiva === 'activas' && <th className="p-4">Recursos</th>}
                                 <th className="p-4">Vencimiento</th>

@@ -140,10 +140,6 @@ const Dashboard = () => {
         const nuevaNotif = { id: Date.now(), mensaje, tipo, leida: false, fecha: new Date() };
         setNotificaciones(prev => [nuevaNotif, ...prev]);
         setAlertas(prev => [...prev, nuevaNotif]);
-
-        setTimeout(() => {
-            setAlertas(prev => prev.filter(a => a.id !== nuevaNotif.id));
-        }, 8000); 
     };
 
     const marcarNotificacionesLeidas = () => setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));

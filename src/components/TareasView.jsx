@@ -31,6 +31,7 @@ const TareasView = ({ updateTrigger }) => {
         recursosUtilizados: '',
         creadorId: '',
         asignadoId: '',
+        compartidosIds: [],
         departamentoId: '',
         fechaLimite: '',
         frecuencia: 'UNICA',
@@ -174,6 +175,7 @@ const TareasView = ({ updateTrigger }) => {
             titulo: tarea.titulo, descripcion: tarea.descripcion || '', notas: tarea.notas || '',
             recursosUtilizados: tarea.recursosUtilizados || '', creadorId: tarea.creador?.id || '',
             asignadoId: tarea.asignado?.id || '', departamentoId: tarea.departamento?.idDepartamento || '',
+            compartidosIds: tarea.compartidos?.map(c => c.id) || [],
             fechaLimite: tarea.fechaLimite || '', frecuencia: tarea.frecuencia || 'UNICA',
             prioridad: tarea.prioridad || 'NORMAL',
             tipoAsignacion: tipoAsig
@@ -246,6 +248,7 @@ const TareasView = ({ updateTrigger }) => {
         e.preventDefault();
         const payload = {
             ...formData,
+            compartidosIds: formData.compartidosIds,
             creadorId: formData.creadorId ? parseInt(formData.creadorId) : null,
             asignadoId: formData.asignadoId ? parseInt(formData.asignadoId) : null,
             departamentoId: formData.departamentoId ? parseInt(formData.departamentoId) : null,
@@ -348,6 +351,7 @@ const TareasView = ({ updateTrigger }) => {
                                 <th className="p-4 pl-6">Título</th>
                                 <th className="p-4">Fecha Creación</th>
                                 <th className="p-4">Asignado A</th>
+                                {tabActiva === 'activas' && <th className="p-4">Recursos</th>}
                                 <th className="p-4">Vencimiento</th>
                                 <th className="p-4">Estado</th>
                                 {tabActiva === 'historial' && <th className="p-4 text-center">Prueba</th>}
@@ -396,7 +400,26 @@ const TareasView = ({ updateTrigger }) => {
                                             {formatearFechaCreacion(item.fechaCreacion)}
                                         </td>
 
-                                        <td className="p-4 text-slate-400">{item.asignado?.nombreCompleto || 'Sin Asignar'}</td>
+                                        <td className="p-4">
+                                            <span className="text-white font-medium block">{item.asignado?.nombreCompleto || 'Sin Asignar'}</span>
+                                            {item.compartidos && item.compartidos.length > 0 && (
+                                                <div className="text-[10px] text-slate-500 mt-1 flex flex-wrap gap-1">
+                                                    {item.compartidos.map(c => (
+                                                        <span key={c.id} className="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-400" title="En copia (Compartido)">
+                                                            + {c.nombreCompleto.split(' ')[0]}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </td>
+                                        
+                                        {/* 👇 NUEVO DATO (Solo se muestra en Activas) 👇 */}
+                                        {tabActiva === 'activas' && (
+                                            <td className="p-4 text-slate-400 text-xs max-w-[150px] truncate" title={item.recursosUtilizados}>
+                                                {item.recursosUtilizados || '---'}
+                                            </td>
+                                        )}
+
                                         <td className="p-4">
                                             <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider border ${alertaVencimiento.clases}`}>{alertaVencimiento.texto}</span>
                                         </td>
@@ -522,6 +545,34 @@ const TareasView = ({ updateTrigger }) => {
                                         <option value="MENSUAL">Mensualmente</option>
                                     </select>
                                 </div>
+                                {/* SECCIÓN: COMPARTIR TAREA (CC) */}
+                            {formData.tipoAsignacion === 'EMPLEADO' && usuariosModal.filter(u => String(u.id) !== String(formData.asignadoId)).length > 0 && (
+                                <div className="md:col-span-4 mt-2 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
+                                        <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                        Compartir tarea con (Colaboradores en copia):
+                                    </label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                        {usuariosModal.filter(u => String(u.id) !== String(formData.asignadoId)).map(u => (
+                                            <label key={u.id} className="flex items-center gap-2 cursor-pointer text-sm text-slate-300 hover:text-white bg-slate-900/50 p-2 rounded-lg border border-slate-700/50 hover:border-yellow-500/50 transition-colors">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={formData.compartidosIds.includes(u.id)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setFormData({...formData, compartidosIds: [...formData.compartidosIds, u.id]});
+                                                        } else {
+                                                            setFormData({...formData, compartidosIds: formData.compartidosIds.filter(id => id !== u.id)});
+                                                        }
+                                                    }}
+                                                    className="rounded border-slate-600 text-yellow-500 focus:ring-yellow-500 bg-slate-700 w-4 h-4 cursor-pointer"
+                                                />
+                                                <span className="truncate font-medium">{u.nombreCompleto}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             </div>
                             
                             <div className="flex justify-end gap-3 pt-4 border-t border-slate-800 mt-6">

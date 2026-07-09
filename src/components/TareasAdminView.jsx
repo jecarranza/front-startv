@@ -49,7 +49,10 @@ const TareasAdminView = ({ updateTrigger }) => {
     });
 
     // Filtramos solo los empleados de mi área para asignárselas
-    const misColaboradores = usuarios.filter(u => u.departamento?.idDepartamento === miDeptoId && u.rol !== 'ADMIN');
+    const misColaboradores = usuarios.filter(u => 
+        u.departamento?.idDepartamento === miDeptoId && 
+        (u.rol !== 'ADMIN' || u.id === miUsuarioDB?.id) // 👈 Esta es la magia
+    );
 
     const abrirModalAsignacion = (tarea) => {
         setTareaAAsignar(tarea);

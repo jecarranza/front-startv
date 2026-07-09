@@ -287,11 +287,22 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
         }
     };
 
-    const evaluarVencimiento = (tarea) => {
+const evaluarVencimiento = (tarea) => {
+        // 1. Si la tarea ya está completada, mostramos su fecha límite original en verde
         if (tarea.estado === 'COMPLETADA' || tarea.estado === 'FINALIZADA') {
-            return { texto: 'Completada', clases: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
+            if (!tarea.fechaLimite) {
+                return { texto: 'Sin límite', clases: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
+            }
+            // Formateamos la fecha límite para que se vea bonita (ej. 08 jul 2026)
+            const fLimite = new Date(tarea.fechaLimite + "T00:00:00");
+            const fechaFormateada = fLimite.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+            
+            return { texto: fechaFormateada, clases: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 font-bold tracking-wide' };
         }
+
+        // 2. Comportamiento normal para las tareas activas
         if (!tarea.fechaLimite) return { texto: 'Sin límite', clases: 'text-slate-400 bg-slate-500/10 border-slate-500/20' };
+        
         const hoy = new Date(); hoy.setHours(0, 0, 0, 0); 
         const limite = new Date(tarea.fechaLimite.split('-')[0], tarea.fechaLimite.split('-')[1] - 1, tarea.fechaLimite.split('-')[2]);
         const diffDias = Math.ceil((limite.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));

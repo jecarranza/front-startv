@@ -320,6 +320,19 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
         }
     };
 
+    const formatearFechaHora = (fechaString) => {
+        if (!fechaString) return '---';
+        try {
+            const fecha = new Date(fechaString);
+            return fecha.toLocaleString('es-MX', { 
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        } catch (error) {
+            return '---';
+        }
+    };
+
     return (
         <div className="animation-fade-in flex flex-col h-full">
             <header className="mb-6">
@@ -368,6 +381,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
                             <tr className="border-b border-slate-700/50 text-slate-400 text-xs font-semibold uppercase tracking-wider">
                                 <th className="p-4 pl-6">Título</th>
                                 <th className="p-4">Fecha Creación</th>
+                                {tabActiva === 'historial' && <th className="p-4 text-emerald-500">Completada El</th>}
                                 <th className="p-4">Asignado A</th>
                                 {tabActiva === 'activas' && <th className="p-4">Recursos</th>}
                                 <th className="p-4">Vencimiento</th>
@@ -417,6 +431,12 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
                                         <td className="p-4 text-slate-400 text-xs font-medium">
                                             {formatearFechaCreacion(item.fechaCreacion)}
                                         </td>
+
+                                        {tabActiva === 'historial' && (
+                                            <td className="p-4 text-emerald-400 text-xs font-bold">
+                                                {formatearFechaHora(item.fechaFinalizacion)}
+                                            </td>
+                                        )}
 
                                         <td className="p-4">
                                             <span className="text-white font-medium block">{item.asignado?.nombreCompleto || 'Sin Asignar'}</span>

@@ -154,9 +154,17 @@ const TareasView = ({ updateTrigger }) => {
         setIsEditing(false);
         setEditId(null);
         setFormData({
-            titulo: '', descripcion: '', notas: '', recursosUtilizados: '',
-            creadorId: usuarioActualDB?.id || '', asignadoId: '', departamentoId: miDeptoId || '',
-            fechaLimite: '', frecuencia: 'UNICA', prioridad: 'NORMAL',
+            titulo: '', 
+            descripcion: '',
+            notas: '',
+            recursosUtilizados: '',
+            creadorId: usuarioActualDB?.id || '',
+            asignadoId: '',
+            departamentoId: miDeptoId || '',
+            compartidosIds: [],
+            fechaLimite: '',
+            frecuencia: 'UNICA',
+            prioridad: 'NORMAL',
             tipoAsignacion: 'EMPLEADO'
         });
         setIsModalOpen(true);

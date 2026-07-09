@@ -6,7 +6,8 @@ import { AuthContext } from '../context/AuthContext';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
-const TareasView = ({ updateTrigger }) => {
+// 👇 RECIBIMOS LAS PROPIEDADES DEL PUENTE
+const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) => {
     const { user } = useContext(AuthContext);
 
     const [tareas, setTareas] = useState([]);
@@ -50,6 +51,14 @@ const TareasView = ({ updateTrigger }) => {
     useEffect(() => {
         cargarDatosMaestros();
     }, [updateTrigger]);
+
+    useEffect(() => {
+        if (fechaFiltroGlobal) {
+            setFiltroFecha(fechaFiltroGlobal); // Aplicamos el filtro en la barra de búsqueda
+            setTabActiva('activas'); // Forzamos ir a la pestaña de Activas
+            setFechaFiltroGlobal(''); // "Consumimos" el mensaje para que no se quede pegado si el usuario limpia el filtro después
+        }
+    }, [fechaFiltroGlobal, setFechaFiltroGlobal]);
 
     const cargarDatosMaestros = async () => {
         setLoading(true);

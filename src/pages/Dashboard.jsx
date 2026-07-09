@@ -17,7 +17,7 @@ const Dashboard = () => {
     const { user, logoutUser } = useContext(AuthContext);
     const navigate = useNavigate();
     const [vistaActiva, setVistaActiva] = useState('resumen');
-
+    const [fechaFiltroGlobal, setFechaFiltroGlobal] = useState('');
     const [alertas, setAlertas] = useState([]);
     const [notificaciones, setNotificaciones] = useState([]);
     const [mostrarPanelNotif, setMostrarPanelNotif] = useState(false);
@@ -284,11 +284,10 @@ const Dashboard = () => {
                 </div>
 
                 <div className="px-8 lg:px-12 pb-12 -mt-12 flex-1">
-                    {vistaActiva === 'resumen' && <ResumenView updateTrigger={updateTrigger} />}
-                    {/* 👇 AQUÍ LE CONECTAMOS EL CABLE A ESTOS DOS 👇 */}
+                    {vistaActiva === 'resumen' && <ResumenView updateTrigger={updateTrigger} setVistaActiva={setVistaActiva} setFechaFiltroGlobal={setFechaFiltroGlobal} />}
                     {vistaActiva === 'usuarios' && <UsuariosView updateTrigger={updateTrigger} />}
                     {vistaActiva === 'departamentos' && <DepartamentosView updateTrigger={updateTrigger} />}
-                    {vistaActiva === 'tareas' && <TareasView updateTrigger={updateTrigger} />}
+                    {vistaActiva === 'tareas' && <TareasView updateTrigger={updateTrigger} fechaFiltroGlobal={fechaFiltroGlobal} setFechaFiltroGlobal={setFechaFiltroGlobal} />}                    {vistaActiva === 'historial' && <HistorialView updateTrigger={updateTrigger} />}
                     {vistaActiva === 'historial' && <HistorialView updateTrigger={updateTrigger} />}
                     {vistaActiva === 'tareasAdmin' && <TareasAdminView updateTrigger={updateTrigger} />}
                 </div>

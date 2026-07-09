@@ -2,11 +2,11 @@ import React, { useState, useEffect, useContext } from 'react';
 import { getAllTareas } from '../services/TareaService';
 import { AuthContext } from '../context/AuthContext';
 
-const ResumenView = ({ updateTrigger }) => {
+const ResumenView = ({ updateTrigger, setVistaActiva, setFechaFiltroGlobal }) => {
     const { user } = useContext(AuthContext);
     const [tareas, setTareas] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    
     const [diaSeleccionado, setDiaSeleccionado] = useState(new Date());
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -128,7 +128,15 @@ const ResumenView = ({ updateTrigger }) => {
     });
 
     const avancePorcentaje = stats.total === 0 ? 0 : Math.round(((stats.completadasATiempo + stats.completadasAtrasadas) / stats.total) * 100);
-
+    const handleVerTareasDelDia = () => {
+        // Formateamos la fecha a YYYY-MM-DD para que el input type="date" la entienda
+        const anio = diaSeleccionado.getFullYear();
+        const mes = String(diaSeleccionado.getMonth() + 1).padStart(2, '0');
+        const dia = String(diaSeleccionado.getDate()).padStart(2, '0');
+        
+        setFechaFiltroGlobal(`${anio}-${mes}-${dia}`); // Guardamos la fecha en el puente
+        setVistaActiva('tareas'); // Cambiamos de pantalla
+    };
     return (
         <div className="animation-fade-in space-y-6">
             <header className="flex justify-between items-end mb-8">
@@ -295,6 +303,27 @@ const ResumenView = ({ updateTrigger }) => {
                             <span className="text-red-400 font-bold">{stats.atrasadasVencidas}</span>
                         </div>
                     </div>
+
+                    <div className="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-slate-700/20 transition-colors">
+                            <span className="text-red-400 font-medium flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)] animate-pulse"></div> Atrasadas (Sin terminar)</span>
+                            <span className="text-red-400 font-bold">{stats.atrasadasVencidas}</span>
+                        </div>
+                    </div>
+
+                    {/* 👇 NUEVO BOTÓN DE NAVEGACIÓN 👇 */}
+                    <button 
+                        onClick={handleVerTareasDelDia}
+                        className="w-full mt-4 py-2.5 bg-slate-700/40 hover:bg-slate-700/80 border border-slate-600/50 text-slate-300 hover:text-white rounded-xl text-xs font-bold tracking-wider uppercase transition-all flex justify-center items-center gap-2 active:scale-95"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        Ver Tareas del Día
+                    </button>
+
+                    <div className="mt-8 pt-6 border-t border-slate-700/50">
+                        <div className="flex justify-between items-end mb-2">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avance Diario</span>
+                            <span className="text-2xl font-black text-white">{avancePorcentaje}%</span>
+                        </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-700/50">
                         <div className="flex justify-between items-end mb-2">

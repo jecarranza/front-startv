@@ -94,14 +94,13 @@ const TareasView = ({ updateTrigger }) => {
         ? departamentos 
         : departamentos.filter(d => String(d.idDepartamento) === String(miDeptoId));
 
-    const usuariosModal = usuarios.filter(u => {
+        const usuariosModal = usuarios.filter(u => {
         const rolUser = u.rol ? String(u.rol).toUpperCase() : '';
         const esAdmin = rolUser === 'ADMIN' || rolUser === 'ROLE_ADMIN';
 
         if (formData.tipoAsignacion === 'EMPLEADO') {
-            // Muestra a los empleados normales de mi área, PERO también me incluye a mí mismo aunque sea Admin
-            return String(u.departamento?.idDepartamento) === String(miDeptoId) && 
-                   (!esAdmin || u.id === usuarioActualDB?.id);
+            // 👇 MAGIA: Simplemente devolvemos a TODOS los que estén en este departamento, sin importar su rol
+            return String(u.departamento?.idDepartamento) === String(miDeptoId);
         } else {
             if (!esAdmin) return false;
             if (!formData.departamentoId) return true;

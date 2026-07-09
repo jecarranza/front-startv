@@ -6,7 +6,7 @@ const HistorialView = ({ updateTrigger }) => {
     const [historial, setHistorial] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     const [pagina, setPagina] = useState(0);
     const [hayMasDatos, setHayMasDatos] = useState(true);
 
@@ -16,7 +16,7 @@ const HistorialView = ({ updateTrigger }) => {
             setLoading(true);
             try {
                 const data = await getHistorialGlobal(pagina, 20);
-                
+
                 if (data && data.length > 0) {
                     // Si estamos en la página 0 (carga inicial o recarga por WebSocket), SOBRESCRIBIMOS.
                     // Si estamos en otra página, CONCATENAMOS (Scroll down).
@@ -25,12 +25,12 @@ const HistorialView = ({ updateTrigger }) => {
                     } else {
                         setHistorial(prevHistorial => [...prevHistorial, ...data]);
                     }
-                    
+
                     // Si regresan exactamente 20, asumimos que hay más. Si son menos, llegamos al final.
                     setHayMasDatos(data.length === 20);
                 } else {
                     // Si llega vacío y estamos en la primera página, limpiamos la pantalla
-                    if (pagina === 0) setHistorial([]); 
+                    if (pagina === 0) setHistorial([]);
                     setHayMasDatos(false);
                 }
             } catch (error) {
@@ -39,14 +39,14 @@ const HistorialView = ({ updateTrigger }) => {
             }
             setLoading(false);
         };
-        
+
         cargarHistorial();
     }, [pagina, updateTrigger]); // <--- Añadimos updateTrigger aquí
 
     // 3. 👇 Efecto extra: Si llega un aviso de WebSockets, forzamos regresar a la página 0
     useEffect(() => {
         if (updateTrigger > 0) {
-            setPagina(0); 
+            setPagina(0);
         }
     }, [updateTrigger]);
 
@@ -56,8 +56,8 @@ const HistorialView = ({ updateTrigger }) => {
     const historialFiltrado = historial.filter(h => {
         const busqueda = searchTerm.toLowerCase();
         return (h.responsable?.toLowerCase() || '').includes(busqueda) ||
-               (h.entidad?.toLowerCase() || '').includes(busqueda) ||
-               (h.detalles?.toLowerCase() || '').includes(busqueda);
+            (h.entidad?.toLowerCase() || '').includes(busqueda) ||
+            (h.detalles?.toLowerCase() || '').includes(busqueda);
     });
 
     const getAccionColor = (accion) => {
@@ -76,14 +76,14 @@ const HistorialView = ({ updateTrigger }) => {
                     <p className="text-slate-400 text-sm font-medium tracking-wide uppercase mb-1">Auditoría y Seguridad</p>
                     <h2 className="text-3xl font-bold text-white">Histórico de Cambios</h2>
                 </div>
-                
+
                 <div className="relative w-full md:w-72">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <input 
-                        type="text" 
-                        placeholder="Buscar usuario, entidad o detalle..." 
+                    <input
+                        type="text"
+                        placeholder="Buscar usuario, entidad o detalle..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-yellow-500/50 placeholder-slate-500"
@@ -133,11 +133,11 @@ const HistorialView = ({ updateTrigger }) => {
                             )}
                         </tbody>
                     </table>
-                    
+
                     {/* 👇 BOTÓN DE PAGINACIÓN 👇 */}
                     {hayMasDatos && searchTerm === '' && (
                         <div className="p-4 flex justify-center border-t border-slate-700/50 bg-slate-900/50">
-                            <button 
+                            <button
                                 onClick={() => setPagina(prev => prev + 1)}
                                 disabled={loading}
                                 className="px-6 py-2.5 bg-slate-800 text-yellow-500 font-bold text-sm rounded-xl border border-yellow-500/30 hover:bg-slate-700 hover:border-yellow-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -153,7 +153,7 @@ const HistorialView = ({ updateTrigger }) => {
                             </button>
                         </div>
                     )}
-                    
+
                 </div>
             </div>
         </div>

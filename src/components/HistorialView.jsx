@@ -91,7 +91,7 @@ const HistorialView = ({ updateTrigger }) => {
                 </div>
             </header>
 
-            <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[calc(100vh-200px)] min-h-[400px]">
+            <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[calc(100vh-280px)] min-h-[300px]">
                 <div className="overflow-y-auto custom-scrollbar flex-1">
                     <table className="w-full text-left border-collapse">
                         <thead className="sticky top-0 bg-slate-900/95 backdrop-blur-sm z-10 shadow-sm">

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getHistorialGlobal } from '../services/AuditoriaService';
 
-// 1. 👇 Recibimos updateTrigger como prop
 const HistorialView = ({ updateTrigger }) => {
     const [historial, setHistorial] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -10,7 +9,6 @@ const HistorialView = ({ updateTrigger }) => {
     const [pagina, setPagina] = useState(0);
     const [hayMasDatos, setHayMasDatos] = useState(true);
 
-    // 2. 👇 Efecto que reacciona a cambios en la página o en el updateTrigger
     useEffect(() => {
         const cargarHistorial = async () => {
             setLoading(true);
@@ -18,18 +16,13 @@ const HistorialView = ({ updateTrigger }) => {
                 const data = await getHistorialGlobal(pagina, 20);
 
                 if (data && data.length > 0) {
-                    // Si estamos en la página 0 (carga inicial o recarga por WebSocket), SOBRESCRIBIMOS.
-                    // Si estamos en otra página, CONCATENAMOS (Scroll down).
                     if (pagina === 0) {
                         setHistorial(data);
                     } else {
                         setHistorial(prevHistorial => [...prevHistorial, ...data]);
                     }
-
-                    // Si regresan exactamente 20, asumimos que hay más. Si son menos, llegamos al final.
                     setHayMasDatos(data.length === 20);
                 } else {
-                    // Si llega vacío y estamos en la primera página, limpiamos la pantalla
                     if (pagina === 0) setHistorial([]);
                     setHayMasDatos(false);
                 }
@@ -41,18 +34,14 @@ const HistorialView = ({ updateTrigger }) => {
         };
 
         cargarHistorial();
-    }, [pagina, updateTrigger]); // <--- Añadimos updateTrigger aquí
+    }, [pagina, updateTrigger]);
 
-    // 3. 👇 Efecto extra: Si llega un aviso de WebSockets, forzamos regresar a la página 0
     useEffect(() => {
         if (updateTrigger > 0) {
             setPagina(0);
         }
     }, [updateTrigger]);
 
-    // ==========================================
-    // DE AQUÍ EN ADELANTE TU CÓDIGO SIGUE IGUAL
-    // ==========================================
     const historialFiltrado = historial.filter(h => {
         const busqueda = searchTerm.toLowerCase();
         return (h.responsable?.toLowerCase() || '').includes(busqueda) ||
@@ -71,7 +60,7 @@ const HistorialView = ({ updateTrigger }) => {
 
     return (
         <div className="animation-fade-in flex flex-col h-[calc(100vh-96px)]">
-            <header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+            <header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4 shrink-0">
                 <div>
                     <p className="text-slate-400 text-sm font-medium tracking-wide uppercase mb-1">Auditoría y Seguridad</p>
                     <h2 className="text-3xl font-bold text-white">Histórico de Cambios</h2>
@@ -92,7 +81,7 @@ const HistorialView = ({ updateTrigger }) => {
             </header>
 
             <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-xl flex flex-col flex-1 min-h-0">
-                <div className="overflow-y-auto custom-scrollbar flex-1">
+                <div className="overflow-y-auto custom-scrollbar flex-1 relative">
                     <table className="w-full text-left border-collapse">
                         <thead className="sticky top-0 bg-slate-900/95 backdrop-blur-sm z-10 shadow-sm">
                             <tr className="border-b border-slate-700/50 text-slate-400 text-xs font-semibold uppercase tracking-wider">
@@ -134,7 +123,6 @@ const HistorialView = ({ updateTrigger }) => {
                         </tbody>
                     </table>
 
-                    {/* 👇 BOTÓN DE PAGINACIÓN 👇 */}
                     {hayMasDatos && searchTerm === '' && (
                         <div className="p-4 flex justify-center border-t border-slate-700/50 bg-slate-900/50">
                             <button
@@ -153,7 +141,6 @@ const HistorialView = ({ updateTrigger }) => {
                             </button>
                         </div>
                     )}
-
                 </div>
             </div>
         </div>

@@ -99,47 +99,34 @@ const Dashboard = () => {
     }, [miEmail, esAdmin]);
 
     const lanzarAlerta = (mensaje, tipo) => {
-        if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("StarTV - Sistema de Tareas", {
-                body: mensaje,
-                icon: '/vite.svg',
-                requireInteraction: tipo === 'URGENTE'
-            });
-        }
-
-        try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (AudioContext) {
-                const ctx = new AudioContext();
-                const osc1 = ctx.createOscillator();
-                const gain1 = ctx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
-                gain1.gain.setValueAtTime(0.08, ctx.currentTime);
-                gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-                osc1.connect(gain1);
-                gain1.connect(ctx.destination);
-                osc1.start();
-                osc1.stop(ctx.currentTime + 0.3);
-                
-                setTimeout(() => {
-                    const osc2 = ctx.createOscillator();
-                    const gain2 = ctx.createGain();
-                    osc2.type = 'sine';
-                    osc2.frequency.setValueAtTime(880.00, ctx.currentTime);
-                    gain2.gain.setValueAtTime(0.08, ctx.currentTime);
-                    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-                    osc2.connect(gain2);
-                    gain2.connect(ctx.destination);
-                    osc2.start();
-                    osc2.stop(ctx.currentTime + 0.4);
-                }, 70);
-            }
-        } catch (error) { }
-
-        const nuevaNotif = { id: Date.now(), mensaje, tipo, leida: false, fecha: new Date() };
-        setNotificaciones(prev => [nuevaNotif, ...prev]);
+        const nuevaNotif = { id: Date.now(), mensaje, tipo };
         setAlertas(prev => [...prev, nuevaNotif]);
+
+        // 1. Hacer que el recuadro verde de la app desaparezca solo a los 6 segundos
+        setTimeout(() => {
+            setAlertas(prev => prev.filter(a => a.id !== nuevaNotif.id));
+        }, 6000);
+        // 2. Disparar la Notificación Nativa de Windows / Chrome / Mac
+        if ("Notification" in window) {
+            // Si ya dimos permiso antes
+            if (Notification.permission === "granted") {
+                new Notification("StarTV Operaciones", {
+                    body: mensaje,
+                    icon: '/vite.svg' // Cambia esto por la ruta de tu logo real si lo tienes (ej. '/logo.png')
+                });
+            } 
+            // Si es la primera vez, pedimos permiso al usuario
+            else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification("StarTV Operaciones", {
+                            body: mensaje,
+                            icon: '/vite.svg'
+                        });
+                    }
+                });
+            }
+        }
     };
 
     const marcarNotificacionesLeidas = () => setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));

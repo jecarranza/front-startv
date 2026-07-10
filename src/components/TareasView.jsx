@@ -20,6 +20,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
     const [filtroEmpleado, setFiltroEmpleado] = useState('');
     
     const [tabActiva, setTabActiva] = useState('activas');
+    const [tareaExpandida, setTareaExpandida] = useState(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -449,15 +450,34 @@ const evaluarVencimiento = (tarea) => {
                                             </td>
                                         )}
 
-                                        <td className="p-4">
+<td className="p-4 align-top">
                                             <span className="text-white font-medium block">{item.asignado?.nombreCompleto || 'Sin Asignar'}</span>
+                                            
                                             {item.compartidos && item.compartidos.length > 0 && (
-                                                <div className="text-[10px] text-slate-500 mt-1 flex flex-wrap gap-1">
-                                                    {item.compartidos.map(c => (
-                                                        <span key={c.id} className="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-400" title="En copia (Compartido)">
-                                                            + {c.nombreCompleto.split(' ')[0]}
-                                                        </span>
-                                                    ))}
+                                                <div className="mt-1.5">
+                                                    {/* 👇 EL NUEVO BOTÓN INTERACTIVO 👇 */}
+                                                    <button 
+                                                        onClick={() => setTareaExpandida(tareaExpandida === item.id ? null : item.id)}
+                                                        className="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2 py-0.5 rounded text-[10px] text-yellow-500 font-bold transition-colors cursor-pointer"
+                                                        title="Ver colaboradores en copia"
+                                                    >
+                                                        <svg className={`w-3 h-3 transition-transform ${tareaExpandida === item.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                        {item.compartidos.length} CC (Con Copia)
+                                                    </button>
+
+                                                    {/* 👇 LA PESTAÑA QUE SE ABRE AL HACER CLIC 👇 */}
+                                                    {tareaExpandida === item.id && (
+                                                        <div className="mt-2 pl-2 border-l-2 border-yellow-500/50 space-y-1.5 animation-fade-in">
+                                                            {item.compartidos.map(c => (
+                                                                <div key={c.id} className="text-[11px] text-slate-300 flex items-center gap-1.5">
+                                                                    <div className="w-3.5 h-3.5 rounded-full bg-slate-700 flex items-center justify-center text-[7px] text-yellow-500 font-bold uppercase shrink-0">
+                                                                        {c.nombreCompleto.charAt(0)}
+                                                                    </div>
+                                                                    <span className="truncate" title={c.nombreCompleto}>{c.nombreCompleto}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </td>

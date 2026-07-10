@@ -274,7 +274,7 @@ const Dashboard = () => {
                     {vistaActiva === 'resumen' && <ResumenView updateTrigger={updateTrigger} setVistaActiva={setVistaActiva} setFechaFiltroGlobal={setFechaFiltroGlobal} />}
                     {vistaActiva === 'usuarios' && <UsuariosView updateTrigger={updateTrigger} />}
                     {vistaActiva === 'departamentos' && <DepartamentosView updateTrigger={updateTrigger} />}
-                    {vistaActiva === 'tareas' && <TareasView updateTrigger={updateTrigger} fechaFiltroGlobal={fechaFiltroGlobal} setFechaFiltroGlobal={setFechaFiltroGlobal} />}                    {vistaActiva === 'historial' && <HistorialView updateTrigger={updateTrigger} />}
+                    {vistaActiva === 'tareas' && <TareasView updateTrigger={updateTrigger} fechaFiltroGlobal={fechaFiltroGlobal} setFechaFiltroGlobal={setFechaFiltroGlobal} />}
                     {vistaActiva === 'historial' && <HistorialView updateTrigger={updateTrigger} />}
                     {vistaActiva === 'tareasAdmin' && <TareasAdminView updateTrigger={updateTrigger} />}
                 </div>

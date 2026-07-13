@@ -2,6 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { getAllUsers, createUser, updateUser, deleteUser } from '../services/UserService';
 import { getAllDepartamentos } from '../services/DepartamentoService';
 
+const obtenerDepartamentoDelToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return 'Todos';
+
+    try {
+        const cleanToken = token.replace('Bearer ', '').replace(/"/g, '');
+        const base64Url = cleanToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payloadDecoded = JSON.parse(jsonPayload);
+        
+        // Si el token trae un departamento válido, lo retornamos inmediatamente
+        if (payloadDecoded.departamento && payloadDecoded.departamento !== "Sin Departamento") {
+            return payloadDecoded.departamento.trim(); 
+        }
+    } catch (e) {
+        console.error("Error al decodificar token inicial:", e);
+    }
+    
+    return 'Todos';
+};
+
 const UsuariosView = ({ updateTrigger }) => {
     const [usuarios, setUsuarios] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
@@ -33,36 +59,10 @@ const UsuariosView = ({ updateTrigger }) => {
                             return u.departamento.nombreDepartamento;
                         }
                         return u.departamento;
-                    }).filter(Boolean); // Filter(Boolean) quita los nulos o vacíos
+                    }).filter(Boolean);
                     
                     const depsUnicos = [...new Set(depsExtraidos)];
                     setListaDepartamentos(depsUnicos);
-
-                    // B) Leer el Token y aplicarlo SOLO si existe en la lista de departamentos de la BD
-                    const token = localStorage.getItem('token'); 
-                    if (token) {
-                        try {
-                            const cleanToken = token.replace('Bearer ', '').replace(/"/g, '');
-                            const base64Url = cleanToken.split('.')[1];
-                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                            
-                            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                            }).join(''));
-                            
-                            const payloadDecoded = JSON.parse(jsonPayload);
-                            
-                            // Validamos que el departamento del token exista realmente en la base de datos
-                            if (payloadDecoded.departamento && 
-                                payloadDecoded.departamento !== "Sin Departamento" &&
-                                depsUnicos.includes(payloadDecoded.departamento)) {
-                                
-                                setFiltroDepartamento(payloadDecoded.departamento);
-                            }
-                        } catch (e) {
-                            console.error("Error al decodificar el token:", e);
-                        }
-                    }
                 }
             } catch (error) {
                 console.error("Error al cargar los usuarios", error);

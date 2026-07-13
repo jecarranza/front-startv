@@ -2,58 +2,58 @@ import React, { useState, useEffect } from 'react';
 import { getAllUsers, createUser, updateUser, deleteUser } from '../services/UserService';
 import { getAllDepartamentos } from '../services/DepartamentoService';
 
-// 1. 👇 Recibimos updateTrigger como prop
 const UsuariosView = ({ updateTrigger }) => {
     const [usuarios, setUsuarios] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // ESTADO PARA LA BARRA DE BÚSQUEDA
+    // Estados para los filtros
     const [searchTerm, setSearchTerm] = useState('');
-
     const [filtroDepartamento, setFiltroDepartamento] = useState('Todos');
     const [listaDepartamentos, setListaDepartamentos] = useState([]);
     
+    // Estados del Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState(null);
-    
     const [formData, setFormData] = useState({ 
-        nombreCompleto: '', 
-        email: '', 
-        password: '', 
-        rol: 'EMPLEADO', 
-        departamentoId: '' 
+        nombreCompleto: '', email: '', password: '', rol: 'EMPLEADO', departamentoId: '' 
     });
 
-    // 2. 👇 Agregamos updateTrigger al arreglo de dependencias
-useEffect(() => {
+    useEffect(() => {
         const cargarDatos = async () => {
             setLoading(true);
             try {
-                const data = await getAllUsers(); // O el nombre de tu función de API
+                const data = await getAllUsers();
                 
                 if (data && data.length > 0) {
                     setUsuarios(data);
 
-                    // A) Extraemos los nombres de los departamentos únicos para llenar el <select>
+                    // A) Llenar el selector de departamentos
                     const depsUnicos = [...new Set(data.map(u => u.departamento?.nombreDepartamento).filter(Boolean))];
                     setListaDepartamentos(depsUnicos);
 
-                    // B) Leemos el Token para auto-seleccionar el departamento del usuario actual
+                    // B) Leer el Token de forma AVANZADA (Soporta Acentos y Caracteres Especiales)
                     const token = localStorage.getItem('token'); 
                     if (token) {
                         try {
-                            // Decodificamos el JWT (La información viene en la segunda parte del token separada por un punto)
-                            const payloadBase64 = token.split('.')[1];
-                            const payloadDecoded = JSON.parse(atob(payloadBase64));
+                            const cleanToken = token.replace('Bearer ', '').replace(/"/g, '');
+                            const base64Url = cleanToken.split('.')[1];
+                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
                             
-                            // Si el token tiene un departamento y no dice "Sin Departamento", lo aplicamos
+                            // Esta línea mágica evita que la app muera si hay un acento
+                            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                            }).join(''));
+                            
+                            const payloadDecoded = JSON.parse(jsonPayload);
+                            
+                            // Aplicamos el filtro automático
                             if (payloadDecoded.departamento && payloadDecoded.departamento !== "Sin Departamento") {
                                 setFiltroDepartamento(payloadDecoded.departamento);
                             }
                         } catch (e) {
-                            console.error("Error al leer el token", e);
+                            console.error("Error al decodificar el token:", e);
                         }
                     }
                 }
@@ -64,47 +64,33 @@ useEffect(() => {
         };
 
         cargarDatos();
+        cargarDatosMaestros(); // Aprovechamos para cargar los departamentos del modal
     }, [updateTrigger]);
 
-    const usuariosFiltrados = usuarios.filter(u => {
-        // Filtro 1: Buscador de texto
-        const busqueda = searchTerm.toLowerCase();
-        const coincideBusqueda = (u.nombreCompleto?.toLowerCase() || '').includes(busqueda) || 
-                                 (u.email?.toLowerCase() || '').includes(busqueda);
-        
-        // Filtro 2: Selector de departamento
-        const nombreDep = u.departamento?.nombreDepartamento || 'Sin Departamento';
-        const coincideFiltro = filtroDepartamento === 'Todos' || nombreDep === filtroDepartamento;
-        
-        return coincideBusqueda && coincideFiltro; // Debe cumplir ambas condiciones
-    });
-
     const cargarDatosMaestros = async () => {
-        setLoading(true);
         try {
             const deptosData = await getAllDepartamentos();
             setDepartamentos(deptosData || []);
         } catch (err) {}
-
-        try {
-            const usuariosData = await getAllUsers();
-            setUsuarios(usuariosData || []);
-        } catch (err) {} 
-        
-        setLoading(false);
     };
 
     // ==========================================
-    // MOTOR DE BÚSQUEDA EN TIEMPO REAL
+    // MOTOR DE BÚSQUEDA Y FILTRADO UNIFICADO
     // ==========================================
-    const usuariosParaMostrar = usuarios.filter(user => {
+    const usuariosFiltrados = usuarios.filter(u => {
+        // 1. Coincidencia de Búsqueda (Texto)
         const busqueda = searchTerm.toLowerCase();
-        const nombre = user.nombreCompleto?.toLowerCase() || '';
-        const correo = user.email?.toLowerCase() || '';
-        const depto = user.departamento?.nombreDepartamento?.toLowerCase() || '';
-
-        // Busca coincidencias en nombre, correo o departamento
-        return nombre.includes(busqueda) || correo.includes(busqueda) || depto.includes(busqueda);
+        const nombre = u.nombreCompleto?.toLowerCase() || '';
+        const correo = u.email?.toLowerCase() || '';
+        const deptoNombre = u.departamento?.nombreDepartamento?.toLowerCase() || '';
+        
+        const coincideBusqueda = nombre.includes(busqueda) || correo.includes(busqueda) || deptoNombre.includes(busqueda);
+        
+        // 2. Coincidencia de Selector (Departamento)
+        const nombreDep = u.departamento?.nombreDepartamento || 'Sin Departamento';
+        const coincideFiltro = filtroDepartamento === 'Todos' || nombreDep === filtroDepartamento;
+        
+        return coincideBusqueda && coincideFiltro;
     });
 
     const handleNuevoUsuario = () => {
@@ -148,7 +134,9 @@ useEffect(() => {
                 await createUser(payload);
             }
             setIsModalOpen(false);
-            cargarDatosMaestros(); 
+            // Recargar usuarios tras crear/editar
+            const data = await getAllUsers();
+            setUsuarios(data || []);
         } catch (err) {
             alert(isEditing ? 'Error al actualizar el usuario.' : 'Error al registrar al usuario.');
         }
@@ -158,7 +146,9 @@ useEffect(() => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario del sistema?')) {
             try {
                 await deleteUser(id);
-                cargarDatosMaestros();
+                // Recargar usuarios tras eliminar
+                const data = await getAllUsers();
+                setUsuarios(data || []);
             } catch (err) {
                 alert('No se pudo eliminar el usuario.');
             }
@@ -166,19 +156,17 @@ useEffect(() => {
     };
 
     return (
-        <div className="animation-fade-in flex flex-col h-full">
+        <div className="animation-fade-in flex flex-col h-[calc(100vh-96px)]">
             
-            {/* HEADER CON BARRA DE BÚSQUEDA INTEGRAD */}
-<header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4 shrink-0">
+            {/* HEADER CON BARRA DE BÚSQUEDA Y FILTRO */}
+            <header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4 shrink-0">
                 <div>
                     <p className="text-slate-400 text-sm font-medium tracking-wide uppercase mb-1">Administración</p>
                     <h2 className="text-3xl font-bold text-white">Catálogo de Usuarios</h2>
                 </div>
 
-                {/* 👇 NUEVO CONTENEDOR FLEX (Selector + Buscador) 👇 */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                    
-                    {/* EL SELECTOR AUTOMÁTICO */}
+                    {/* SELECTOR AUTOMÁTICO */}
                     <select
                         value={filtroDepartamento}
                         onChange={(e) => setFiltroDepartamento(e.target.value)}
@@ -190,7 +178,7 @@ useEffect(() => {
                         ))}
                     </select>
 
-                    {/* TU BUSCADOR CLÁSICO */}
+                    {/* BUSCADOR CLÁSICO */}
                     <div className="relative w-full sm:w-72">
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -206,12 +194,10 @@ useEffect(() => {
                 </div>
             </header>
 
-            {/* TABLA CON SCROLL INDEPENDIENTE */}
-            {/* El calc(100vh-220px) asegura que la tabla no se salga de la pantalla */}
-            <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-xl max-h-[calc(100vh-220px)] flex flex-col">
-                <div className="overflow-y-auto custom-scrollbar flex-1">
+            {/* TABLA CON SCROLL AUTOMÁTICO REPARADO */}
+            <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-xl flex flex-col flex-1 min-h-0">
+                <div className="overflow-y-auto custom-scrollbar flex-1 relative">
                     <table className="w-full text-left border-collapse">
-                        {/* Cabecera pegajosa (Sticky) */}
                         <thead className="sticky top-0 bg-slate-900/95 backdrop-blur-sm z-10 shadow-sm">
                             <tr className="border-b border-slate-700/50 text-slate-400 text-xs font-semibold uppercase tracking-wider">
                                 <th className="p-4 pl-6">Nombre Completo</th>
@@ -222,8 +208,8 @@ useEffect(() => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 text-sm">
-                            {/* AQUÍ USAMOS LA LISTA FILTRADA */}
-                            {usuariosParaMostrar.map((item) => (
+                            {/* 👇 AQUÍ YA USAMOS LA LISTA CORRECTA QUE TIENE EL FILTRO 👇 */}
+                            {usuariosFiltrados.map((item) => (
                                 <tr key={item.id} className="hover:bg-slate-700/10 transition-colors group">
                                     <td className="p-4 pl-6 font-semibold text-white group-hover:text-yellow-500 transition-colors">{item.nombreCompleto}</td>
                                     <td className="p-4 text-slate-300">{item.email}</td>
@@ -247,10 +233,10 @@ useEffect(() => {
                                     </td>
                                 </tr>
                             ))}
-                            {usuariosParaMostrar.length === 0 && !loading && (
+                            {usuariosFiltrados.length === 0 && !loading && (
                                 <tr>
                                     <td colSpan="5" className="p-8 text-center text-slate-500">
-                                        {searchTerm ? 'No se encontraron resultados para tu búsqueda.' : 'No hay usuarios registrados.'}
+                                        {searchTerm ? 'No se encontraron resultados para tu búsqueda.' : 'No hay usuarios registrados en este departamento.'}
                                     </td>
                                 </tr>
                             )}
@@ -259,7 +245,7 @@ useEffect(() => {
                 </div>
             </div>
 
-            {/* MODAL DE CREACIÓN/EDICIÓN */}
+            {/* MODAL DE CREACIÓN/EDICIÓN SE QUEDA IGUAL */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
                     <div className="bg-slate-900 border border-slate-700/60 w-full max-w-md p-6 rounded-2xl shadow-2xl relative">

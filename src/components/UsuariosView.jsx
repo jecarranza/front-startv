@@ -10,6 +10,9 @@ const UsuariosView = ({ updateTrigger }) => {
     
     // ESTADO PARA LA BARRA DE BÚSQUEDA
     const [searchTerm, setSearchTerm] = useState('');
+
+    const [filtroDepartamento, setFiltroDepartamento] = useState('Todos');
+    const [listaDepartamentos, setListaDepartamentos] = useState([]);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -24,9 +27,57 @@ const UsuariosView = ({ updateTrigger }) => {
     });
 
     // 2. 👇 Agregamos updateTrigger al arreglo de dependencias
-    useEffect(() => {
-        cargarDatosMaestros();
-    }, [updateTrigger]); // <--- ¡Listo para el tiempo real!
+useEffect(() => {
+        const cargarDatos = async () => {
+            setLoading(true);
+            try {
+                const data = await obtenerUsuarios(); // O el nombre de tu función de API
+                
+                if (data && data.length > 0) {
+                    setUsuarios(data);
+
+                    // A) Extraemos los nombres de los departamentos únicos para llenar el <select>
+                    const depsUnicos = [...new Set(data.map(u => u.departamento?.nombreDepartamento).filter(Boolean))];
+                    setListaDepartamentos(depsUnicos);
+
+                    // B) Leemos el Token para auto-seleccionar el departamento del usuario actual
+                    const token = localStorage.getItem('token'); 
+                    if (token) {
+                        try {
+                            // Decodificamos el JWT (La información viene en la segunda parte del token separada por un punto)
+                            const payloadBase64 = token.split('.')[1];
+                            const payloadDecoded = JSON.parse(atob(payloadBase64));
+                            
+                            // Si el token tiene un departamento y no dice "Sin Departamento", lo aplicamos
+                            if (payloadDecoded.departamento && payloadDecoded.departamento !== "Sin Departamento") {
+                                setFiltroDepartamento(payloadDecoded.departamento);
+                            }
+                        } catch (e) {
+                            console.error("Error al leer el token", e);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error al cargar los usuarios", error);
+            }
+            setLoading(false);
+        };
+
+        cargarDatos();
+    }, [updateTrigger]);
+
+    const usuariosFiltrados = usuarios.filter(u => {
+        // Filtro 1: Buscador de texto
+        const busqueda = searchTerm.toLowerCase();
+        const coincideBusqueda = (u.nombreCompleto?.toLowerCase() || '').includes(busqueda) || 
+                                 (u.email?.toLowerCase() || '').includes(busqueda);
+        
+        // Filtro 2: Selector de departamento
+        const nombreDep = u.departamento?.nombreDepartamento || 'Sin Departamento';
+        const coincideFiltro = filtroDepartamento === 'Todos' || nombreDep === filtroDepartamento;
+        
+        return coincideBusqueda && coincideFiltro; // Debe cumplir ambas condiciones
+    });
 
     const cargarDatosMaestros = async () => {
         setLoading(true);
@@ -118,34 +169,40 @@ const UsuariosView = ({ updateTrigger }) => {
         <div className="animation-fade-in flex flex-col h-full">
             
             {/* HEADER CON BARRA DE BÚSQUEDA INTEGRAD */}
-            <header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+<header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4 shrink-0">
                 <div>
                     <p className="text-slate-400 text-sm font-medium tracking-wide uppercase mb-1">Administración</p>
                     <h2 className="text-3xl font-bold text-white">Catálogo de Usuarios</h2>
                 </div>
-                
-                <div className="flex flex-col sm:flex-row gap-3">
-                    {/* INPUT DE BÚSQUEDA */}
-                    <div className="relative">
+
+                {/* 👇 NUEVO CONTENEDOR FLEX (Selector + Buscador) 👇 */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                    
+                    {/* EL SELECTOR AUTOMÁTICO */}
+                    <select
+                        value={filtroDepartamento}
+                        onChange={(e) => setFiltroDepartamento(e.target.value)}
+                        className="w-full sm:w-auto px-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-sm text-yellow-500 font-semibold focus:outline-none focus:ring-1 focus:ring-yellow-500/50 cursor-pointer outline-none"
+                    >
+                        <option value="Todos">Todos los departamentos</option>
+                        {listaDepartamentos.map(dep => (
+                            <option key={dep} value={dep}>{dep}</option>
+                        ))}
+                    </select>
+
+                    {/* TU BUSCADOR CLÁSICO */}
+                    <div className="relative w-full sm:w-72">
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <input 
-                            type="text" 
-                            placeholder="Buscar usuario..." 
+                        <input
+                            type="text"
+                            placeholder="Buscar usuario o correo..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-sm text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all placeholder-slate-500"
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-yellow-500/50 placeholder-slate-500"
                         />
                     </div>
-
-                    <button 
-                        onClick={handleNuevoUsuario}
-                        className="py-2.5 px-5 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-xl shadow-[0_4px_14px_rgba(234,179,8,0.2)] hover:shadow-[0_6px_20px_rgba(234,179,8,0.3)] transition-all flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                        Nuevo Usuario
-                    </button>
                 </div>
             </header>
 

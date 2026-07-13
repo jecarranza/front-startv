@@ -28,12 +28,17 @@ const UsuariosView = ({ updateTrigger }) => {
                 
                 if (data && data.length > 0) {
                     setUsuarios(data);
-
-                    // A) Llenar el selector de departamentos
-                    const depsUnicos = [...new Set(data.map(u => u.departamento?.nombreDepartamento).filter(Boolean))];
+                    const depsExtraidos = data.map(u => {
+                        if (typeof u.departamento === 'object' && u.departamento !== null) {
+                            return u.departamento.nombreDepartamento;
+                        }
+                        return u.departamento;
+                    }).filter(Boolean); // Filter(Boolean) quita los nulos o vacíos
+                    
+                    const depsUnicos = [...new Set(depsExtraidos)];
                     setListaDepartamentos(depsUnicos);
 
-                    // B) Leer el Token de forma AVANZADA (Soporta Acentos y Caracteres Especiales)
+                    // B) Leer el Token y aplicarlo SOLO si existe en la lista de departamentos de la BD
                     const token = localStorage.getItem('token'); 
                     if (token) {
                         try {
@@ -41,15 +46,17 @@ const UsuariosView = ({ updateTrigger }) => {
                             const base64Url = cleanToken.split('.')[1];
                             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
                             
-                            // Esta línea mágica evita que la app muera si hay un acento
                             const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
                                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                             }).join(''));
                             
                             const payloadDecoded = JSON.parse(jsonPayload);
                             
-                            // Aplicamos el filtro automático
-                            if (payloadDecoded.departamento && payloadDecoded.departamento !== "Sin Departamento") {
+                            // Validamos que el departamento del token exista realmente en la base de datos
+                            if (payloadDecoded.departamento && 
+                                payloadDecoded.departamento !== "Sin Departamento" &&
+                                depsUnicos.includes(payloadDecoded.departamento)) {
+                                
                                 setFiltroDepartamento(payloadDecoded.departamento);
                             }
                         } catch (e) {
@@ -159,10 +166,20 @@ const UsuariosView = ({ updateTrigger }) => {
         <div className="animation-fade-in flex flex-col h-[calc(100vh-96px)]">
             
             {/* HEADER CON BARRA DE BÚSQUEDA Y FILTRO */}
-            <header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4 shrink-0">
-                <div>
-                    <p className="text-slate-400 text-sm font-medium tracking-wide uppercase mb-1">Administración</p>
-                    <h2 className="text-3xl font-bold text-white">Catálogo de Usuarios</h2>
+<header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4 shrink-0">
+                <div className="flex justify-between items-center w-full md:w-auto">
+                    <div>
+                        <p className="text-slate-400 text-sm font-medium tracking-wide uppercase mb-1">Administración</p>
+                        <h2 className="text-3xl font-bold text-white">Catálogo de Usuarios</h2>
+                    </div>
+                    {/* BOTÓN + NUEVO USUARIO (Visible en móviles arriba, en desktop se alinea a la derecha) */}
+                    <button 
+                        onClick={handleNuevoUsuario}
+                        className="md:hidden px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-xl shadow-lg transition-colors flex items-center gap-2"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                        Nuevo
+                    </button>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
@@ -191,6 +208,15 @@ const UsuariosView = ({ updateTrigger }) => {
                             className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-yellow-500/50 placeholder-slate-500"
                         />
                     </div>
+
+                    {/* BOTÓN + NUEVO USUARIO (Desktop) */}
+                    <button 
+                        onClick={handleNuevoUsuario}
+                        className="hidden md:flex px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-xl shadow-lg transition-colors items-center gap-2"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                        Nuevo Usuario
+                    </button>
                 </div>
             </header>
 

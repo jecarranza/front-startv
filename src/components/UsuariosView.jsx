@@ -84,18 +84,25 @@ const UsuariosView = ({ updateTrigger }) => {
     // ==========================================
     // MOTOR DE BÚSQUEDA Y FILTRADO UNIFICADO
     // ==========================================
-    const usuariosFiltrados = usuarios.filter(u => {
+const usuariosFiltrados = usuarios.filter(u => {
         // 1. Coincidencia de Búsqueda (Texto)
         const busqueda = searchTerm.toLowerCase();
         const nombre = u.nombreCompleto?.toLowerCase() || '';
         const correo = u.email?.toLowerCase() || '';
-        const deptoNombre = u.departamento?.nombreDepartamento?.toLowerCase() || '';
         
-        const coincideBusqueda = nombre.includes(busqueda) || correo.includes(busqueda) || deptoNombre.includes(busqueda);
+        // Extraemos el nombre del departamento del usuario actual
+        let deptoNombre = '';
+        if (typeof u.departamento === 'object' && u.departamento !== null) {
+            deptoNombre = u.departamento.nombreDepartamento;
+        } else if (typeof u.departamento === 'string') {
+            deptoNombre = u.departamento;
+        }
+
+        const coincideBusqueda = nombre.includes(busqueda) || correo.includes(busqueda) || (deptoNombre || '').toLowerCase().includes(busqueda);
         
         // 2. Coincidencia de Selector (Departamento)
-        const nombreDep = u.departamento?.nombreDepartamento || 'Sin Departamento';
-        const coincideFiltro = filtroDepartamento === 'Todos' || nombreDep === filtroDepartamento;
+        const depFinal = deptoNombre || 'Sin Departamento';
+        const coincideFiltro = filtroDepartamento === 'Todos' || depFinal === filtroDepartamento;
         
         return coincideBusqueda && coincideFiltro;
     });

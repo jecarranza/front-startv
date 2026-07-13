@@ -31,7 +31,7 @@ useEffect(() => {
         const cargarDatos = async () => {
             setLoading(true);
             try {
-                const data = await getAllUsers; // O el nombre de tu función de API
+                const data = await getAllUsers(); // O el nombre de tu función de API
                 
                 if (data && data.length > 0) {
                     setUsuarios(data);

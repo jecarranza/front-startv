@@ -246,6 +246,12 @@ const ResumenView = ({ updateTrigger, setVistaActiva, setFechaFiltroGlobal }) =>
                         <div>D</div><div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div>
                     </div>
                     <div className="grid grid-cols-7 gap-2">
+                        {/* 👇 1. MAGIA: Calculamos cuántos espacios vacíos hay antes del día 1 👇 */}
+                        {Array.from({ length: new Date(diaSeleccionado.getFullYear(), diaSeleccionado.getMonth(), 1).getDay() }).map((_, i) => (
+                            <div key={`empty-${i}`} className="aspect-square"></div>
+                        ))}
+
+                        {/* 2. Dibujamos los días reales del mes */}
                         {Array.from({ length: new Date(diaSeleccionado.getFullYear(), diaSeleccionado.getMonth() + 1, 0).getDate() }).map((_, i) => {
                             const dia = i + 1;
                             const current = new Date(diaSeleccionado.getFullYear(), diaSeleccionado.getMonth(), dia);

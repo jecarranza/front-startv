@@ -10,6 +10,12 @@ const BACKEND_URL = import.meta.env.VITE_API_URL;
 const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) => {
     const { user } = useContext(AuthContext);
 
+    const [pruebasVistas, setPruebasVistas] = useState(new Set());
+    // Función para recordar qué prueba ya abrimos
+    const handleAbrirPrueba = (id) => {
+        setPruebasVistas(prev => new Set(prev).add(id));
+    };
+
     const [tareas, setTareas] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
@@ -507,7 +513,17 @@ const evaluarVencimiento = (tarea) => {
                                         {tabActiva === 'historial' && (
                                             <td className="p-4 text-center">
                                                 {item.evidenciaUrl ? (
-                                                    <a href={`${BACKEND_URL}${item.evidenciaUrl}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg text-xs font-bold transition-all active:scale-95">
+                                                    <a 
+                                                        href={`${BACKEND_URL}${item.evidenciaUrl}`} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        onClick={() => handleAbrirPrueba(item.id)}
+                                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 border ${
+                                                            pruebasVistas.has(item.id) 
+                                                                ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20' // VISTO: Verde Neón
+                                                                : 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/80 hover:text-slate-300 border-slate-600/50' // NO VISTO: Gris
+                                                        }`}
+                                                    >
                                                         Ver Prueba
                                                     </a>
                                                 ) : <span className="text-slate-500 text-xs italic">Sin archivo</span>}

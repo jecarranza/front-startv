@@ -24,7 +24,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
     const [searchTerm, setSearchTerm] = useState('');
     const [filtroFecha, setFiltroFecha] = useState('');
     const [filtroEmpleado, setFiltroEmpleado] = useState('');
-    
+
     const [tabActiva, setTabActiva] = useState('activas');
     const [tareaExpandida, setTareaExpandida] = useState(null);
 
@@ -92,7 +92,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             rolDelToken = payload.rol || payload.role || 'EMPLEADO';
-        } catch (e) {}
+        } catch (e) { }
     }
     const esAdminMenu = rolDelToken === 'ADMIN' || rolDelToken === 'ROLE_ADMIN';
 
@@ -100,17 +100,17 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
     const miDeptoId = usuarioActualDB?.departamento?.idDepartamento;
 
     const usuariosTopBar = usuarios.filter(u => {
-        if (!esAdminMenu) return false; 
+        if (!esAdminMenu) return false;
         const esDeMiArea = String(u.departamento?.idDepartamento) === String(miDeptoId);
         const esAdminGlobal = u.rol === 'ADMIN' || u.rol === 'ROLE_ADMIN';
         return esDeMiArea || esAdminGlobal;
     });
 
-    const deptosModal = formData.tipoAsignacion === 'ADMIN' 
-        ? departamentos 
+    const deptosModal = formData.tipoAsignacion === 'ADMIN'
+        ? departamentos
         : departamentos.filter(d => String(d.idDepartamento) === String(miDeptoId));
 
-        const usuariosModal = usuarios.filter(u => {
+    const usuariosModal = usuarios.filter(u => {
         const rolUser = u.rol ? String(u.rol).toUpperCase() : '';
         const esAdmin = rolUser === 'ADMIN' || rolUser === 'ROLE_ADMIN';
 
@@ -122,9 +122,9 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
             if (!formData.departamentoId) return true;
 
             const idDeptoUsuario = u.departamento?.idDepartamento;
-            const esSuperAdmin = !idDeptoUsuario; 
+            const esSuperAdmin = !idDeptoUsuario;
             const coincideDepto = String(idDeptoUsuario) === String(formData.departamentoId);
-                
+
             return coincideDepto || esSuperAdmin;
         }
     });
@@ -138,7 +138,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
         const coincideFecha = filtroFecha ? (tarea.fechaLimite && tarea.fechaLimite.startsWith(filtroFecha)) : true;
         const coincideEmpleado = filtroEmpleado ? (tarea.asignado?.id?.toString() === filtroEmpleado) : true;
 
-        const coincideTab = tabActiva === 'activas' 
+        const coincideTab = tabActiva === 'activas'
             ? (tarea.estado !== 'COMPLETADA' && tarea.estado !== 'FINALIZADA')
             : (tarea.estado === 'COMPLETADA' || tarea.estado === 'FINALIZADA');
 
@@ -149,9 +149,9 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
     if (tabActiva === 'activas') {
         tareasProcesadas.sort((a, b) => {
             const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-            
+
             const getDias = (f) => {
-                if(!f) return 999;
+                if (!f) return 999;
                 const d = new Date(f.split('-')[0], f.split('-')[1] - 1, f.split('-')[2]);
                 return Math.ceil((d.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
             };
@@ -161,9 +161,9 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
 
             if (aUrgente && !bUrgente) return -1;
             if (bUrgente && !aUrgente) return 1;
-            
+
             // Si tienen la misma prioridad, que salgan primero las de fecha más cercana
-            return getDias(a.fechaLimite) - getDias(b.fechaLimite); 
+            return getDias(a.fechaLimite) - getDias(b.fechaLimite);
         });
     }
 
@@ -171,7 +171,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
         setIsEditing(false);
         setEditId(null);
         setFormData({
-            titulo: '', 
+            titulo: '',
             descripcion: '',
             notas: '',
             recursosUtilizados: '',
@@ -190,7 +190,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
     const handleEditar = (tarea) => {
         setIsEditing(true);
         setEditId(tarea.id);
-        
+
         const rolAsignado = tarea.asignado?.rol ? String(tarea.asignado.rol).toUpperCase() : '';
         const esAdminAsignado = rolAsignado === 'ADMIN' || rolAsignado === 'ROLE_ADMIN';
         const esOtroDepto = String(tarea.departamento?.idDepartamento) !== String(miDeptoId);
@@ -210,7 +210,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        
+
         if (name === 'tipoAsignacion') {
             setFormData({
                 ...formData,
@@ -222,7 +222,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
             setFormData({
                 ...formData,
                 departamentoId: value,
-                asignadoId: '' 
+                asignadoId: ''
             });
         } else {
             setFormData({ ...formData, [name]: value });
@@ -264,7 +264,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
         try {
             await reportarIncidenciaTarea(tareaARechazar, incidenciaTexto);
             setIsIncidenciaModalOpen(false);
-            setTabActiva('activas'); 
+            setTabActiva('activas');
             cargarDatosMaestros();
         } catch (err) { alert('Error al reportar incidencia.'); }
     };
@@ -294,7 +294,7 @@ const TareasView = ({ updateTrigger, fechaFiltroGlobal, setFechaFiltroGlobal }) 
         }
     };
 
-const evaluarVencimiento = (tarea) => {
+    const evaluarVencimiento = (tarea) => {
         // 1. Si la tarea ya está completada, mostramos su fecha límite original en verde
         if (tarea.estado === 'COMPLETADA' || tarea.estado === 'FINALIZADA') {
             if (!tarea.fechaLimite) {
@@ -303,14 +303,14 @@ const evaluarVencimiento = (tarea) => {
             // Formateamos la fecha límite para que se vea bonita (ej. 08 jul 2026)
             const fLimite = new Date(tarea.fechaLimite + "T00:00:00");
             const fechaFormateada = fLimite.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
-            
+
             return { texto: fechaFormateada, clases: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 font-bold tracking-wide' };
         }
 
         // 2. Comportamiento normal para las tareas activas
         if (!tarea.fechaLimite) return { texto: 'Sin límite', clases: 'text-slate-400 bg-slate-500/10 border-slate-500/20' };
-        
-        const hoy = new Date(); hoy.setHours(0, 0, 0, 0); 
+
+        const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
         const limite = new Date(tarea.fechaLimite.split('-')[0], tarea.fechaLimite.split('-')[1] - 1, tarea.fechaLimite.split('-')[2]);
         const diffDias = Math.ceil((limite.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -342,7 +342,7 @@ const evaluarVencimiento = (tarea) => {
         if (!fechaString) return '---';
         try {
             const fecha = new Date(fechaString);
-            return fecha.toLocaleString('es-MX', { 
+            return fecha.toLocaleString('es-MX', {
                 day: '2-digit', month: 'short', year: 'numeric',
                 hour: '2-digit', minute: '2-digit'
             });
@@ -411,41 +411,50 @@ const evaluarVencimiento = (tarea) => {
                         <tbody className="divide-y divide-slate-800/60 text-sm">
                             {tareasProcesadas.map((item) => {
                                 const alertaVencimiento = evaluarVencimiento(item);
-                                
+
                                 // 👇 MAGIA: Evaluamos dinámicamente cuántos días le quedan
                                 let diasRestantes = 999;
                                 if (item.fechaLimite) {
-                                    const hoy = new Date(); hoy.setHours(0, 0, 0, 0); 
+                                    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
                                     const limite = new Date(item.fechaLimite.split('-')[0], item.fechaLimite.split('-')[1] - 1, item.fechaLimite.split('-')[2]);
                                     diasRestantes = Math.ceil((limite.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
                                 }
 
                                 // Es urgente si la BD dice "URGENTE", O si el tiempo nos alcanzó (<= 1 día)
                                 const esUrgente = (item.prioridad === 'URGENTE' || (item.fechaLimite && diasRestantes <= 1)) && tabActiva === 'activas';
-                                const esRecurrente = item.frecuencia && item.frecuencia.toUpperCase() !== 'UNICA'; 
+                                const esRecurrente = item.frecuencia && item.frecuencia.toUpperCase() !== 'UNICA';
 
                                 return (
                                     <tr key={item.id} className={`transition-colors group relative ${esUrgente ? 'bg-red-500/5 border-l-4 border-l-red-500' : 'hover:bg-slate-700/10 border-l-4 border-l-transparent'}`}>
-                                        <td className="p-4 pl-4 font-semibold text-white group-hover:text-yellow-500 transition-colors w-1/3">
-                                            <div className="flex items-center gap-2">
-                                                {item.titulo}
+                                        <td className="p-4 pl-4 font-semibold text-white group-hover:text-yellow-500 transition-colors w-1/3 max-w-[250px] sm:max-w-xs md:max-w-sm">
+                                            {/* Agregamos flex-wrap para que el badge de URGENTE baje si el título es muy largo */}
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className="whitespace-normal break-words">{item.titulo}</span>
+
                                                 {esRecurrente && (
-                                                    <svg className="w-4 h-4 text-blue-400 opacity-70 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title={`Tarea repetitiva: ${item.frecuencia}`}>
+                                                    <svg className="w-4 h-4 text-blue-400 opacity-70 cursor-help shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" title={`Tarea repetitiva: ${item.frecuencia}`}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                                     </svg>
                                                 )}
-                                                {esUrgente && <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500 text-white animate-pulse">URGENTE</span>}
+                                                {esUrgente && <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500 text-white animate-pulse shrink-0">URGENTE</span>}
                                             </div>
-                                            <p className="text-xs text-slate-500 font-normal mt-0.5 truncate">{item.descripcion}</p>
-                                            
+
+                                            {/* Cambiamos truncate por line-clamp-2 para que ocupe 2 renglones hacia abajo */}
+                                            <p
+                                                className="text-xs text-slate-500 font-normal mt-1.5 leading-relaxed whitespace-normal break-words line-clamp-2"
+                                                title={item.descripcion}
+                                            >
+                                                {item.descripcion}
+                                            </p>
+
                                             {item.incidencia && tabActiva === 'activas' && (
-                                                <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400 flex items-start gap-2">
+                                                <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400 flex items-start gap-2 whitespace-normal break-words">
                                                     <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                                                     <span><strong>Rechazada:</strong> {item.incidencia}</span>
                                                 </div>
                                             )}
                                         </td>
-                                        
+
                                         <td className="p-4 text-slate-400 text-xs font-medium">
                                             {formatearFechaCreacion(item.fechaCreacion)}
                                         </td>
@@ -455,12 +464,12 @@ const evaluarVencimiento = (tarea) => {
                                                 {formatearFechaHora(item.fechaFinalizacion)}
                                             </td>
                                         )}
-                                        
+
                                         <td className="p-4 align-top">
                                             {tabActiva === 'activas' ? (
                                                 <>
                                                     <span className="text-white font-medium block">{item.asignado?.nombreCompleto || 'Sin Asignar'}</span>
-                                                    
+
                                                     {item.compartidos && item.compartidos.length > 0 && (
                                                         <div className="mt-1.5">
                                                             {/* Tu botón interactivo de compartidos se queda exactamente igual aquí adentro */}
@@ -480,7 +489,7 @@ const evaluarVencimiento = (tarea) => {
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        
+
                                                     )}
                                                 </>
                                             ) : (
@@ -490,7 +499,7 @@ const evaluarVencimiento = (tarea) => {
                                                 </span>
                                             )}
                                         </td>
-                                        
+
                                         {/* 👇 NUEVO DATO (Solo se muestra en Activas) 👇 */}
                                         {tabActiva === 'activas' && (
                                             <td className="p-4 text-slate-400 text-xs max-w-[150px] truncate" title={item.recursosUtilizados}>
@@ -513,23 +522,22 @@ const evaluarVencimiento = (tarea) => {
                                         {tabActiva === 'historial' && (
                                             <td className="p-4 text-center">
                                                 {item.evidenciaUrl ? (
-                                                    <a 
-                                                        href={`${BACKEND_URL}${item.evidenciaUrl}`} 
-                                                        target="_blank" 
+                                                    <a
+                                                        href={`${BACKEND_URL}${item.evidenciaUrl}`}
+                                                        target="_blank"
                                                         rel="noopener noreferrer"
                                                         onClick={() => handleAbrirPrueba(item.id)}
-                                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 border ${
-                                                            pruebasVistas.has(item.id) 
+                                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 border ${pruebasVistas.has(item.id)
                                                                 ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20' // VISTO: Verde Neón
                                                                 : 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/80 hover:text-slate-300 border-slate-600/50' // NO VISTO: Gris
-                                                        }`}
+                                                            }`}
                                                     >
                                                         Ver Prueba
                                                     </a>
                                                 ) : <span className="text-slate-500 text-xs italic">Sin archivo</span>}
                                             </td>
                                         )}
-                                        
+
                                         {esAdminMenu && (
                                             <td className="p-4 pr-6 text-center">
                                                 <div className="flex items-center justify-center gap-3">
@@ -579,7 +587,7 @@ const evaluarVencimiento = (tarea) => {
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-medium text-slate-400 uppercase mb-1">Descripción</label>
@@ -610,7 +618,7 @@ const evaluarVencimiento = (tarea) => {
                                     <label className="block text-xs font-medium text-slate-400 uppercase mb-1">Asignado A</label>
                                     <select name="asignadoId" value={formData.asignadoId} onChange={handleInputChange} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-yellow-500">
                                         <option value="">Sin Asignar</option>
-                                        
+
                                         {usuariosModal.map(u => {
                                             const rolUser = u.rol ? String(u.rol).toUpperCase() : '';
                                             const etiquetaAdmin = (rolUser === 'ADMIN' || rolUser === 'ROLE_ADMIN') ? ' 👑' : '';
@@ -621,7 +629,7 @@ const evaluarVencimiento = (tarea) => {
                                                 </option>
                                             );
                                         })}
-                                        
+
                                     </select>
                                 </div>
                                 <div>
@@ -634,35 +642,35 @@ const evaluarVencimiento = (tarea) => {
                                     </select>
                                 </div>
                                 {/* SECCIÓN: COMPARTIR TAREA (CC) */}
-                            {formData.tipoAsignacion === 'EMPLEADO' && usuariosModal.filter(u => String(u.id) !== String(formData.asignadoId)).length > 0 && (
-                                <div className="md:col-span-4 mt-2 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
-                                        <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                        Compartir tarea con (Colaboradores en copia):
-                                    </label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                                        {usuariosModal.filter(u => String(u.id) !== String(formData.asignadoId)).map(u => (
-                                            <label key={u.id} className="flex items-center gap-2 cursor-pointer text-sm text-slate-300 hover:text-white bg-slate-900/50 p-2 rounded-lg border border-slate-700/50 hover:border-yellow-500/50 transition-colors">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={formData.compartidosIds.includes(u.id)}
-                                                    onChange={(e) => {
-                                                        if (e.target.checked) {
-                                                            setFormData({...formData, compartidosIds: [...formData.compartidosIds, u.id]});
-                                                        } else {
-                                                            setFormData({...formData, compartidosIds: formData.compartidosIds.filter(id => id !== u.id)});
-                                                        }
-                                                    }}
-                                                    className="rounded border-slate-600 text-yellow-500 focus:ring-yellow-500 bg-slate-700 w-4 h-4 cursor-pointer"
-                                                />
-                                                <span className="truncate font-medium">{u.nombreCompleto}</span>
-                                            </label>
-                                        ))}
+                                {formData.tipoAsignacion === 'EMPLEADO' && usuariosModal.filter(u => String(u.id) !== String(formData.asignadoId)).length > 0 && (
+                                    <div className="md:col-span-4 mt-2 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+                                        <label className="block text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
+                                            <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                            Compartir tarea con (Colaboradores en copia):
+                                        </label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                            {usuariosModal.filter(u => String(u.id) !== String(formData.asignadoId)).map(u => (
+                                                <label key={u.id} className="flex items-center gap-2 cursor-pointer text-sm text-slate-300 hover:text-white bg-slate-900/50 p-2 rounded-lg border border-slate-700/50 hover:border-yellow-500/50 transition-colors">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.compartidosIds.includes(u.id)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setFormData({ ...formData, compartidosIds: [...formData.compartidosIds, u.id] });
+                                                            } else {
+                                                                setFormData({ ...formData, compartidosIds: formData.compartidosIds.filter(id => id !== u.id) });
+                                                            }
+                                                        }}
+                                                        className="rounded border-slate-600 text-yellow-500 focus:ring-yellow-500 bg-slate-700 w-4 h-4 cursor-pointer"
+                                                    />
+                                                    <span className="truncate font-medium">{u.nombreCompleto}</span>
+                                                </label>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
                             </div>
-                            
+
                             <div className="flex justify-end gap-3 pt-4 border-t border-slate-800 mt-6">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">Cancelar</button>
                                 <button type="submit" className="px-5 py-2 text-sm bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-xl transition-colors">{isEditing ? 'Actualizar' : 'Crear'}</button>
@@ -677,9 +685,9 @@ const evaluarVencimiento = (tarea) => {
                     <div className="bg-slate-900 border border-emerald-500/30 w-full max-w-md p-6 rounded-2xl shadow-[0_0_40px_rgba(16,185,129,0.15)] relative">
                         <h3 className="text-xl font-bold text-white mb-2">Completar Tarea</h3>
                         <p className="text-slate-400 text-sm mb-6">Adjunta evidencia (imagen/PDF) para marcarla como completada.</p>
-                        
+
                         <form onSubmit={handleSubirEvidencia}>
-                            
+
                             {/* 👇 NUEVO DISEÑO DEL INPUT FILE 👇 */}
                             <div className="mb-6">
                                 <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-700 border-dashed rounded-xl cursor-pointer bg-slate-800/50 hover:bg-slate-700/50 hover:border-emerald-500/50 transition-all group">
@@ -700,11 +708,11 @@ const evaluarVencimiento = (tarea) => {
                                             </>
                                         )}
                                     </div>
-                                    <input 
-                                        type="file" 
-                                        className="hidden" 
-                                        accept="image/*,.pdf" 
-                                        onChange={(e) => setArchivoEvidencia(e.target.files[0])} 
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*,.pdf"
+                                        onChange={(e) => setArchivoEvidencia(e.target.files[0])}
                                     />
                                 </label>
                             </div>
